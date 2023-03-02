@@ -97,6 +97,18 @@ public class ProcessCameraProviderHostApiImpl implements ProcessCameraProviderHo
     return availableCamerasIds;
   }
 
+  /** Returns whether or not the specified {@link UseCase} has been bound to the lifecycle of the 
+   * {@link LifecycleOwner} the specified instance of {@link ProcessCameraProvider} tracks.
+   */
+  @Override
+  public Boolean isBound(@NonNull Long identifier, @NonNull Long useCaseIdentifier) {
+    ProcessCameraProvider processCameraProvider =
+        (ProcessCameraProvider) Objects.requireNonNull(instanceManager.getInstance(identifier));
+    UseCase useCase =
+        (UseCase) Objects.requireNonNull(instanceManager.getInstance(useCaseIdentifier));    
+    return processCameraProvider.isBound(useCase);
+  }
+
   /**
    * Binds specified {@code UseCase}s to the lifecycle of the {@code LifecycleOwner} that
    * corresponds to this instance and returns the instance of the {@code Camera} whose lifecycle

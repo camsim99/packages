@@ -219,6 +219,11 @@ class AndroidCameraCameraX extends CameraPlatform {
     return _cameraEvents(cameraId).whereType<CameraInitializedEvent>();
   }
 
+  /// The camera started to close.
+  Stream<CameraClosingEvent> onCameraClosing(int cameraId) {
+    throw UnimplementedError('onCameraClosing() is not implemented.');
+  }
+
   /// The camera experienced an error.
   @override
   Stream<CameraErrorEvent> onCameraError(int cameraId) {
@@ -300,6 +305,16 @@ class AndroidCameraCameraX extends CameraPlatform {
 
     processCameraProvider!.unbind(<UseCase>[preview!]);
     previewIsBound = false;
+  }
+
+  /// Checks if any [UseCase]s are no longer bound to the [processCameraProvider]
+  /// in order to send a corresponding camera event if so.
+  ///
+  /// This should typically be used after a [UseCase] has been unbound.
+  void _checkForCameraClose() {
+    if (preview != null && processCameraProvider.isBound(preview)) {
+      // send the event
+    }
   }
 
   // Methods for mapping Flutter camera constants to CameraX constants:

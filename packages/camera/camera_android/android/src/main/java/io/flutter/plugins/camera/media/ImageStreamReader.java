@@ -205,6 +205,7 @@ public class ImageStreamReader {
     imageReader.setOnImageAvailableListener(
         reader -> {
           Image image = reader.acquireNextImage();
+          System.out.println("CAMILLE + IMAGE FORMAT FOR STREAMING " + image.getFormat());
           if (image == null) return;
 
           onImageAvailable(image, captureProps, imageStreamSink);

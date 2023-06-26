@@ -16,11 +16,13 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.OutputConfiguration;
 import android.hardware.camera2.params.SessionConfiguration;
 import android.media.CamcorderProfile;
 import android.media.EncoderProfiles;
+import android.media.Image;
 import android.media.ImageReader;
 import android.media.MediaRecorder;
 import android.os.Build;
@@ -360,7 +362,7 @@ class Camera
 
           @Override
           public void onError(@NonNull CameraDevice cameraDevice, int errorCode) {
-            Log.i(TAG, "open | onError");
+            Log.i(TAG, "open | onError " + Integer.toString(errorCode));
 
             close();
             String errorDescription;
@@ -439,6 +441,7 @@ class Camera
               dartMessenger.sendCameraErrorEvent("The camera was closed during configuration.");
               return;
             }
+            Log.e("CAMILLE+ONCONFIGURED", "capture session configuration done");
             captureSession = session;
 
             Log.i(TAG, "Updating builder settings");
@@ -538,6 +541,9 @@ class Camera
     if (stream && imageStreamReader != null) {
       surfaces.add(imageStreamReader.getSurface());
     }
+    // MODIFICATION 1.
+    // Note that this causes issues for image streaming alone. Will need to not add this surface regardless of the situation.
+    surfaces.add(pictureImageReader.getSurface()); // -- CAMILLE: the thing about this is that it can't be unconditional this can only be added when a still image capture is going to take place
 
     createCaptureSession(
         CameraDevice.TEMPLATE_RECORD, successCallback, surfaces.toArray(new Surface[0]));
@@ -609,6 +615,8 @@ class Camera
     }
   }
 
+  private Long resultTimeStamp;
+
   /**
    * Capture a still picture. This method should be called when a response is received {@link
    * #cameraCaptureCallback} from both lockFocus().
@@ -654,6 +662,8 @@ class Camera
               @NonNull CameraCaptureSession session,
               @NonNull CaptureRequest request,
               @NonNull TotalCaptureResult result) {
+            // MODIFICATION 3. will need edits as there may be multiple captures.
+            resultTimeStamp = result.get(CaptureResult.SENSOR_TIMESTAMP);
             unlockAutoFocus();
           }
         };
@@ -1140,10 +1150,23 @@ class Camera
   public void onImageAvailable(ImageReader reader) {
     Log.i(TAG, "onImageAvailable");
 
+    // MODIFICATION 2.
+    Image currentImage = reader.acquireNextImage();
+    System.out.println(currentImage.getTimestamp());
+    System.out.println(resultTimeStamp);
+    if (currentImage.getFormat() != ImageFormat.JPEG || resultTimeStamp == null || currentImage.getTimestamp() != resultTimeStamp) {
+      Log.e("CAMILLE+IMAGEFORMAT", "we don't want it!");
+      System.out.println(currentImage.getFormat());
+      currentImage.close();
+      return;
+    }
+
+    System.out.println("CAMILLE WE MADE IT " + resultTimeStamp);
+
     backgroundHandler.post(
         new ImageSaver(
             // Use acquireNextImage since image reader is only for one image.
-            reader.acquireNextImage(),
+            currentImage,
             captureFile,
             new ImageSaver.Callback() {
               @Override

@@ -13,6 +13,9 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import io.flutter.plugins.camera.types.CameraCaptureProperties;
 import io.flutter.plugins.camera.types.CaptureTimeoutsWrapper;
+import 	android.hardware.camera2.CaptureFailure;
+import android.view.Surface;
+
 
 /**
  * A callback object for tracking the progress of a {@link android.hardware.camera2.CaptureRequest}
@@ -69,6 +72,7 @@ class CameraCaptureCallback extends CaptureCallback {
   }
 
   private void process(CaptureResult result) {
+    Log.e("CAMILLE", cameraState.toString());
     Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
     Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);
 
@@ -158,6 +162,7 @@ class CameraCaptureCallback extends CaptureCallback {
       @NonNull CameraCaptureSession session,
       @NonNull CaptureRequest request,
       @NonNull CaptureResult partialResult) {
+        // Log.e("CAMILLE", "progress!");
     process(partialResult);
   }
 
@@ -166,8 +171,29 @@ class CameraCaptureCallback extends CaptureCallback {
       @NonNull CameraCaptureSession session,
       @NonNull CaptureRequest request,
       @NonNull TotalCaptureResult result) {
+        // Log.e("CAMILLE", "completed!");
+
     process(result);
   }
+
+  @Override
+  public void onCaptureFailed (CameraCaptureSession session, 
+        CaptureRequest request, 
+        CaptureFailure failure) {
+          Log.e("CAMILLE", "WE ARE LOOKING AT A FAILURE!");
+        }
+  @Override
+  public void onCaptureSequenceAborted (CameraCaptureSession session, 
+        int sequenceId) {
+          Log.e("CAMILLE", "Aborted");
+        }
+  @Override
+  public void onCaptureBufferLost (CameraCaptureSession session, 
+        CaptureRequest request, 
+        Surface target, 
+        long frameNumber) {
+          Log.e("CAMILLE", "Buffer lost!");
+        }
 
   /** An interface that describes the different state changes implementers can be informed about. */
   interface CameraCaptureStateListener {

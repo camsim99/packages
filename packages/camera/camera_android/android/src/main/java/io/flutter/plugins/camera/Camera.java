@@ -15,6 +15,7 @@ import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
+import 	android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
@@ -71,6 +72,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executors;
 
 @FunctionalInterface
@@ -298,7 +300,7 @@ class Camera
             resolutionFeature.getCaptureSize().getWidth(),
             resolutionFeature.getCaptureSize().getHeight(),
             ImageFormat.JPEG,
-            1);
+            3); // MODIFICATION 6 to match queue.
 
     // For image streaming, use the provided image format or fall back to YUV420.
     Integer imageFormat = supportedImageFormats.get(imageFormatGroup);
@@ -568,6 +570,9 @@ class Camera
       return;
     }
 
+    while (pictureImageReader.acquireNextImage() != null) {
+    }
+
     // Listen for picture being taken.
     pictureImageReader.setOnImageAvailableListener(this, backgroundHandler);
 
@@ -664,15 +669,80 @@ class Camera
               @NonNull TotalCaptureResult result) {
             // MODIFICATION 3. will need edits as there may be multiple captures.
             resultTimeStamp = result.get(CaptureResult.SENSOR_TIMESTAMP);
+
+            // MODIFICATION 5.
+            while (true) {
+              // Log.e("CAMILLE", "RUNNING LOOP");
+              Image currentImage;
+              try {
+                currentImage = imageQueue.poll();
+                if (currentImage == null) {
+                  // Log.e("CAMILLE", "image is null!!!!!!!");
+                  continue;
+                }
+              } catch (Exception e) {
+                Log.e("CAMILLE", "interrupted exception 1");
+                return;
+              }
+            
+              System.out.println(currentImage.getTimestamp());
+              System.out.println(resultTimeStamp);
+              if (currentImage.getFormat() != ImageFormat.JPEG || resultTimeStamp == null || currentImage.getTimestamp() != resultTimeStamp) {
+                Log.e("CAMILLE+IMAGEFORMAT", "we don't want it!");
+                System.out.println(currentImage.getFormat());
+                currentImage.close();
+                continue;
+              }
+
+              System.out.println("CAMILLE WE MADE IT " + resultTimeStamp);
+
+              // backgroundHandler.post(
+              //     new ImageSaver(
+              //         // Use acquireNextImage since image reader is only for one image.
+              //         currentImage,
+              //         captureFile,
+              //         new ImageSaver.Callback() {
+              //           @Override
+              //           public void onComplete(String absolutePath) {
+              //             Log.e("CAMILLE", "on complete called!");
+              //             dartMessenger.finish(flutterResult, absolutePath);
+              //           }
+
+              //           @Override
+              //           public void onError(String errorCode, String errorMessage) {
+              //             Log.e("CAMILLE", "on error called!");
+              //             dartMessenger.error(flutterResult, errorCode, errorMessage, null);
+              //           }
+              //         }));
+              dartMessenger.finish(flutterResult, "");
+              currentImage.close();
+              cameraCaptureCallback.setCameraState(CameraState.STATE_PREVIEW);
+
+              pictureImageReader.setOnImageAvailableListener(null, null);
+
+              while(imageQueue.size() > 0) {
+                try {
+                imageQueue.take().close();
+                } catch (InterruptedException e) {
+                  Log.e("CAMILLE", "interrupted exception 2");
+                  return;
+                }
+              }
+              break;
+
+
+            }
             unlockAutoFocus();
+
           }
         };
 
     try {
-      captureSession.stopRepeating();
+      // captureSession.stopRepeating();
       Log.i(TAG, "sending capture request");
       captureSession.capture(stillBuilder.build(), captureCallback, backgroundHandler);
-    } catch (CameraAccessException e) {
+    } catch (Exception e) {
+      Log.e("CAMILLE", "WHOOPS!");
       dartMessenger.error(flutterResult, "cameraAccess", e.getMessage(), null);
     }
   }
@@ -1142,6 +1212,9 @@ class Camera
     Log.i(TAG, "startPreviewWithImageStream");
   }
 
+  // PART OF MODIFICATION 4.
+  ArrayBlockingQueue<Image> imageQueue = new ArrayBlockingQueue<Image>(3);
+
   /**
    * This a callback object for the {@link ImageReader}. "onImageAvailable" will be called when a
    * still image is ready to be saved.
@@ -1150,36 +1223,40 @@ class Camera
   public void onImageAvailable(ImageReader reader) {
     Log.i(TAG, "onImageAvailable");
 
-    // MODIFICATION 2.
+    // MODIFICATION 4.
     Image currentImage = reader.acquireNextImage();
-    System.out.println(currentImage.getTimestamp());
-    System.out.println(resultTimeStamp);
-    if (currentImage.getFormat() != ImageFormat.JPEG || resultTimeStamp == null || currentImage.getTimestamp() != resultTimeStamp) {
-      Log.e("CAMILLE+IMAGEFORMAT", "we don't want it!");
-      System.out.println(currentImage.getFormat());
-      currentImage.close();
-      return;
-    }
+    imageQueue.add(currentImage);
 
-    System.out.println("CAMILLE WE MADE IT " + resultTimeStamp);
+    // // MODIFICATION 2.
+    // Image currentImage = reader.acquireNextImage();
+    // System.out.println(currentImage.getTimestamp());
+    // System.out.println(resultTimeStamp);
+    // if (currentImage.getFormat() != ImageFormat.JPEG || resultTimeStamp == null || currentImage.getTimestamp() != resultTimeStamp) {
+    //   Log.e("CAMILLE+IMAGEFORMAT", "we don't want it!");
+    //   System.out.println(currentImage.getFormat());
+    //   currentImage.close();
+    //   return;
+    // }
 
-    backgroundHandler.post(
-        new ImageSaver(
-            // Use acquireNextImage since image reader is only for one image.
-            currentImage,
-            captureFile,
-            new ImageSaver.Callback() {
-              @Override
-              public void onComplete(String absolutePath) {
-                dartMessenger.finish(flutterResult, absolutePath);
-              }
+    // System.out.println("CAMILLE WE MADE IT " + resultTimeStamp);
 
-              @Override
-              public void onError(String errorCode, String errorMessage) {
-                dartMessenger.error(flutterResult, errorCode, errorMessage, null);
-              }
-            }));
-    cameraCaptureCallback.setCameraState(CameraState.STATE_PREVIEW);
+    // backgroundHandler.post(
+    //     new ImageSaver(
+    //         // Use acquireNextImage since image reader is only for one image.
+    //         currentImage,
+    //         captureFile,
+    //         new ImageSaver.Callback() {
+    //           @Override
+    //           public void onComplete(String absolutePath) {
+    //             dartMessenger.finish(flutterResult, absolutePath);
+    //           }
+
+    //           @Override
+    //           public void onError(String errorCode, String errorMessage) {
+    //             dartMessenger.error(flutterResult, errorCode, errorMessage, null);
+    //           }
+    //         }));
+    // cameraCaptureCallback.setCameraState(CameraState.STATE_PREVIEW);
   }
 
   private void prepareRecording(@NonNull Result result) {

@@ -40,13 +40,17 @@ public class ImageSaver implements Runnable {
 
   @Override
   public void run() {
+    System.out.println("CAMILLE WE MADE IT ");
+
     ByteBuffer buffer = image.getPlanes()[0].getBuffer();
     byte[] bytes = new byte[buffer.remaining()];
     buffer.get(bytes);
     FileOutputStream output = null;
+
     try {
       output = FileOutputStreamFactory.create(file);
       output.write(bytes);
+              System.out.println("CAMILLE WE MADE IT ");
 
       callback.onComplete(file.getAbsolutePath());
 

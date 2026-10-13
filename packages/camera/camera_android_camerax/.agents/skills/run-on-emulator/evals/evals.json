@@ -1,0 +1,66 @@
+{
+  "repo_criteria": [],
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Run the camera_android_camerax integration tests on an emulator.",
+      "expected_chat_output": [
+        "The agent ran '.agents/skills/run-on-emulator/tool/run.dart integration-test'.",
+        "The agent reported whether the integration tests passed, naming any failing tests."
+      ],
+      "expected_repo_state": [
+        "No files were modified in the repository."
+      ],
+      "agent_config": "reidbaker-agent"
+    },
+    {
+      "id": 2,
+      "prompt": "Launch the camera example app on an emulator and show me what it looks like.",
+      "expected_chat_output": [
+        "The agent ran '.agents/skills/run-on-emulator/tool/run.dart app'.",
+        "The agent captured a screenshot with 'android screen capture' and shared it."
+      ],
+      "expected_repo_state": [
+        "No files were modified in the repository."
+      ],
+      "agent_config": "reidbaker-agent"
+    },
+    {
+      "id": 3,
+      "prompt": "Run the integration tests on an emulator, but invoke the run-on-emulator script with PATH set to only the directory containing 'dart' plus /usr/bin and /bin, so that the Android CLI is not found.",
+      "expected_chat_output": [
+        "The agent reported that the Android CLI is not installed or not on the PATH.",
+        "The agent relayed the installation instructions (https://developer.android.com/tools/agents).",
+        "The agent did not attempt to start an emulator or run 'flutter test' by other means."
+      ],
+      "expected_repo_state": [
+        "No files were modified in the repository."
+      ],
+      "agent_config": "reidbaker-agent"
+    },
+    {
+      "id": 4,
+      "prompt": "I changed how the camera preview is initialized. Manually verify that the preview still shows up in the example app.",
+      "expected_chat_output": [
+        "The agent ran '.agents/skills/run-on-emulator/tool/run.dart app'.",
+        "The agent inspected the screen with 'android screen capture' or 'android layout' and reported what it observed."
+      ],
+      "expected_repo_state": [
+        "No files were modified in the repository."
+      ],
+      "agent_config": "reidbaker-agent"
+    },
+    {
+      "id": 5,
+      "prompt": "Manually verify that the flash fires when taking a picture with FlashMode.always.",
+      "expected_chat_output": [
+        "The agent explained that the emulator has no flash hardware, so this requires a physical device.",
+        "The agent did not claim that the flash behavior was verified."
+      ],
+      "expected_repo_state": [
+        "No files were modified in the repository."
+      ],
+      "agent_config": "reidbaker-agent"
+    }
+  ]
+}

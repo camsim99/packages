@@ -99,7 +99,29 @@ so prompt the user to review all found errors
 and fix the newly introduced failures before pushing any code.
 Then, move on to the next verification step.
 
-## 5. Publish Check (Version and CHANGELOG updates)
+## 5. Check Integration Tests Pass
+
+CI does not run this package's integration tests on emulators,
+so they must be run locally before pushing.
+Read and follow the [run-on-emulator](../run-on-emulator/SKILL.md) skill
+to run the integration tests in `example/integration_test`:
+
+```bash
+dart run .agents/skills/run-on-emulator/tool/run.dart integration-test
+```
+
+- If the script fails with an environment exit code
+  (2: Android CLI missing, 3: `adb`/`flutter` missing, 4: no usable AVD,
+  5: emulator failed to boot), do not work around it.
+  Mark this check as skipped, warn the user with the fix from the script output,
+  and move on to the next verification step.
+- If the build fails or the integration tests fail or time out
+  (exit code 6 or 7), the code is not ready to push.
+  As with unit tests, the failures might predate these changes,
+  so prompt the user to review the failing tests
+  and fix any newly introduced failures before pushing.
+
+## 6. Publish Check (Version and CHANGELOG updates)
 
 Any pull request that changes non-test code
 must increment the package version in `pubspec.yaml`
@@ -117,7 +139,7 @@ and committed before code can be pushed.
 
 Additionally, ensure `CHANGELOG.md` formatting follows the [CHANGELOG style guide](https://github.com/flutter/flutter/blob/master/docs/ecosystem/contributing/README.md#changelog-style).
 
-## 6. Check License Headers
+## 7. Check License Headers
 
 All source files in this repository must include
 the standard copyright and license header.
@@ -130,13 +152,13 @@ dart pub global run flutter_plugin_tools license-check --packages camera_android
 If this command fails, the code WAS NOT ready to push.
 Those license errors must be fixed and committed before code is pushed.
 
-## 7. Check for Required Documentation
+## 8. Check for Required Documentation
 
 Check if the modified or newly added public APIs
 include Dart doc comments (`///`). If not, the code IS NOT ready to
 be pushed.
 
-## 8. Check for Added Tests
+## 9. Check for Added Tests
 
 Virtually all changes require a test.
 See [Test Documentation](https://github.com/flutter/flutter/blob/master/docs/ecosystem/testing/Plugin-Tests.md).
@@ -174,6 +196,7 @@ communicate:
 [x] Check for Changed Files
 [x] Check Merge Conflicts
 [x] Check Unit Tests Pass
+[x] Check Integration Tests Pass
 [x] Check Publish Check (Version and CHANGELOG updates)
 [x] Check License Headers
 [x] Check for Required Documentation
@@ -183,11 +206,13 @@ If for some reason you had to skip a check or it partially failed but you still 
 
 # YES, you are ready to push!
 Unit tests failing for <path to failing test> but failure appears unrelated to the work being pushed.
+Integration tests skipped: the Android CLI is not installed (see https://developer.android.com/tools/agents).
 Publish check failed but the PR is exempt.
 [x] Initial Clean Working Tree
 [x] Check for Changed Files
 [x] Check Merge Conflicts
 [ ] Check Unit Tests Pass
+[ ] Check Integration Tests Pass
 [ ] Check Publish Check (Version and CHANGELOG updates)
 [x] Check License Headers
 [x] Check for Required Documentation

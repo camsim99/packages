@@ -13,7 +13,13 @@
   any new logic.
   - **Dart Unit Tests**: See [dart-add-unit-test](.agents/skills/dart-add-unit-test/SKILL.md).
   - **Native Unit Tests**: Run `dart pub global run flutter_plugin_tools native-test --android --packages camera_android_camerax --no-integration`.
-  - **Integration Tests**: See [flutter-add-integration-test](.agents/skills/flutter-add-integration-test/SKILL.md).
+  - **Integration Tests**: See [flutter-add-integration-test](.agents/skills/flutter-add-integration-test/SKILL.md)
+    to write them and [run-on-emulator](.agents/skills/run-on-emulator/SKILL.md)
+    to run them.
+- **Manual Verification**: When an implementation plan or the user calls for
+  manual verification that can be done on an emulator, use
+  [run-on-emulator](.agents/skills/run-on-emulator/SKILL.md). Hardware-specific
+  behavior (e.g., flash, real lens characteristics) requires a physical device.
 - **Run Pre-Push Checks**: Run [pre-push-skill](.agents/skills/pre-push-skill/SKILL.md)
   before pushing to prevent CI failures and code review blocks.
 

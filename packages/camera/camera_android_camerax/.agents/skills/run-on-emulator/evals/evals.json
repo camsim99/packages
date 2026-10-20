@@ -61,6 +61,30 @@
         "No files were modified in the repository."
       ],
       "agent_config": "reidbaker-agent"
+    },
+    {
+      "id": 6,
+      "prompt": "Write an implementation plan (do not implement it) for making the example app show a SnackBar with the saved file path after a picture is taken. Include a verification section.",
+      "expected_chat_output": [
+        "The plan's verification section states that the agent will verify the change itself on an emulator using the run-on-emulator skill (app and/or integration-test).",
+        "The plan does not ask the user to launch an emulator, run the example app, or run integration tests by hand."
+      ],
+      "expected_repo_state": [
+        "No files were modified in the repository."
+      ],
+      "agent_config": "reidbaker-agent"
+    },
+    {
+      "id": 7,
+      "prompt": "Execute only the verification section of this plan and report the results: '## Manual Verification\n1. Launch the example app on an emulator.\n2. Confirm the camera selector and capture controls are visible.'",
+      "expected_chat_output": [
+        "The agent ran '.agents/skills/run-on-emulator/tool/run.dart app' itself instead of asking the user to do it.",
+        "The agent captured a screenshot and reported whether the camera selector and capture controls are visible."
+      ],
+      "expected_repo_state": [
+        "No files were modified in the repository."
+      ],
+      "agent_config": "reidbaker-agent"
     }
   ]
 }

@@ -1,6 +1,6 @@
 ---
 name: run-on-emulator
-description: Launches an Android emulator with the Android CLI and runs the camera_android_camerax example app or its integration tests (example/integration_test). Use this skill whenever the user asks to run the integration tests, run or launch the example app, test on an emulator, or "manually verify" a change; whenever the pre-push-skill reaches its integration test step; and whenever an implementation plan has a manual verification step that can be exercised on an emulator.
+description: Launches an Android emulator with the Android CLI and runs the camera_android_camerax example app or its integration tests (example/integration_test). Use this skill whenever the user asks to run the integration tests, run or launch the example app, test on an emulator, or "manually verify" a change; whenever the pre-push-skill reaches its integration test step; whenever an implementation plan has a verification step (including "Manual Verification") that can be exercised on an emulator; and whenever writing the verification section of an implementation plan, so emulator checks are planned as automated agent steps instead of manual steps for the user.
 metadata:
   internal: true
 ---
@@ -86,10 +86,35 @@ The last line of output is always `RESULT: SUCCESS ...` or
 | 7 | Integration tests failed or timed out | Report each failing test and its error from the output. Re-run each failing test once with `--plain-name` to tell flakes (common right after a cold boot) from real failures, and report both results. On a timeout, capture the screen (below) to find what is blocking the app. |
 | 64 | Invalid arguments | Fix the command and re-run. |
 
-## Manual Verification
+## Writing Verification Steps in Implementation Plans
 
-Use this workflow when an implementation plan calls for manual verification
-(or the user asks for it) and the behavior can be observed on an emulator:
+When writing an implementation plan, write emulator-observable verification as
+steps **the agent performs** with this skill, not as steps for the user. Never
+write "the user should run the emulator", "launch the app and confirm...", or
+"manually run the integration tests". For example:
+
+```markdown
+## Verification Plan
+
+### Automated (performed by the agent)
+- Dart/native unit tests: ...
+- Integration tests: run `run-on-emulator integration-test` (add a new
+  integration test for <behavior> and run it with `--plain-name`).
+- Emulator check: run `run-on-emulator app`, tap <control>, and capture a
+  screenshot showing <expected result>.
+
+### Requires a physical device (performed by the user)
+- <Only hardware-dependent checks, e.g. flash firing, with the reason.>
+```
+
+Leave out the physical-device section entirely if nothing needs real hardware.
+
+## Verifying a Change in the App
+
+Use this workflow when an implementation plan has a verification step
+(including one labeled "Manual Verification"), or the user asks for one, and
+the behavior can be observed on an emulator. Do it yourself rather than
+asking the user to:
 
 1. Run the `app` command. Note the `serial=` value in the `RESULT:` line.
 2. Inspect and drive the app with the Android CLI and `adb`:

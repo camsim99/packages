@@ -16,10 +16,19 @@
   - **Integration Tests**: See [flutter-add-integration-test](.agents/skills/flutter-add-integration-test/SKILL.md)
     to write them and [run-on-emulator](.agents/skills/run-on-emulator/SKILL.md)
     to run them.
-- **Manual Verification**: When an implementation plan or the user calls for
-  manual verification that can be done on an emulator, use
-  [run-on-emulator](.agents/skills/run-on-emulator/SKILL.md). Hardware-specific
-  behavior (e.g., flash, real lens characteristics) requires a physical device.
+- **Emulator Verification**: Agents can boot an emulator, run the example app,
+  and run integration tests themselves with
+  [run-on-emulator](.agents/skills/run-on-emulator/SKILL.md).
+  - **When writing an implementation plan** (e.g., with `/plan`), write any
+    verification that can be observed on an emulator as an automated step the
+    agent will perform with `run-on-emulator` (`app` or `integration-test`).
+    Do NOT ask the user to run an emulator, launch the app, or run integration
+    tests by hand.
+  - **When executing a plan**, carry out its verification steps, including
+    any labeled "Manual Verification", with `run-on-emulator` instead of
+    handing them to the user.
+  - Only assign verification to the user when it needs physical hardware
+    (e.g., flash/torch, real lens characteristics, OEM quirks), and state why.
 - **Run Pre-Push Checks**: Run [pre-push-skill](.agents/skills/pre-push-skill/SKILL.md)
   before pushing to prevent CI failures and code review blocks.
 

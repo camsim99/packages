@@ -28,7 +28,9 @@
     any labeled "Manual Verification", with `run-on-emulator` instead of
     handing them to the user.
   - Only assign verification to the user when it needs physical hardware
-    (e.g., flash/torch, real lens characteristics, OEM quirks), and state why.
+    (e.g., flash/torch, real lens characteristics, OEM quirks) or is a subtle
+    visual property that cannot be asserted in a test (e.g., mirroring), and
+    state why.
 - **Run Pre-Push Checks**: Run [pre-push-skill](.agents/skills/pre-push-skill/SKILL.md)
   before pushing to prevent CI failures and code review blocks.
 

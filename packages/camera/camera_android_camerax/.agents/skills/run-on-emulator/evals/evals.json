@@ -18,7 +18,7 @@
       "prompt": "Launch the camera example app on an emulator and show me what it looks like.",
       "expected_chat_output": [
         "The agent ran '.agents/skills/run-on-emulator/tool/run.dart app'.",
-        "The agent captured a screenshot with 'android screen capture' and shared it."
+        "The agent captured a screenshot (with 'adb exec-out screencap' or 'android screen capture') and shared it."
       ],
       "expected_repo_state": [
         "No files were modified in the repository."
@@ -43,7 +43,7 @@
       "prompt": "I changed how the camera preview is initialized. Manually verify that the preview still shows up in the example app.",
       "expected_chat_output": [
         "The agent ran '.agents/skills/run-on-emulator/tool/run.dart app'.",
-        "The agent inspected the screen with 'android screen capture' or 'android layout' and reported what it observed."
+        "The agent inspected the screen with a screenshot ('adb exec-out screencap' or 'android screen capture') or 'android layout' and reported what it observed."
       ],
       "expected_repo_state": [
         "No files were modified in the repository."
